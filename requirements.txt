@@ -2,3 +2,5 @@ arxivscraper
 spacy
 wordcloud
 scikit-learn
+ratelimit
+numpy
