@@ -1,3 +1,4 @@
 arxivscraper
 spacy
 wordcloud
+scikit-learn
