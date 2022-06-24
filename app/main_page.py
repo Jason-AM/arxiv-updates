@@ -11,8 +11,6 @@ NUM_ARTICLES_PER_PAGE = 5
 
 DATA_DIR = Path("./data")
 
-head()
-
 
 def reset_current_article_num():
     st.session_state["article_display_start_index"] = 0
@@ -27,6 +25,8 @@ def get_article_list_to_show(list_of_titles_urls, start_indx, end_indx):
 
 
 def main_page():
+
+    head()
 
     if "article_display_start_index" not in st.session_state:
         reset_current_article_num()
@@ -76,26 +76,22 @@ def main_page():
     else:
 
         if previous_articles:
-            updated_start_indx = (
-                st.session_state["article_display_start_index"] - NUM_ARTICLES_PER_PAGE
+            # ensure that start index must be at least 0
+            updated_start_indx = max(
+                st.session_state["article_display_start_index"] - NUM_ARTICLES_PER_PAGE,
+                0,
             )
-            if updated_start_indx < 0:
-                updated_start_indx = 0
 
             st.session_state["article_display_start_index"] = updated_start_indx
 
         if next_articles:
 
-            updated_start_indx = (
-                st.session_state["article_display_start_index"] + NUM_ARTICLES_PER_PAGE
+            # ensure that start index can't be more than the number of articles on the
+            # last page
+            updated_start_indx = min(
+                st.session_state["article_display_start_index"] + NUM_ARTICLES_PER_PAGE,
+                len(sorted_list_of_titles_urls) - NUM_ARTICLES_PER_PAGE,
             )
-
-            if updated_start_indx + NUM_ARTICLES_PER_PAGE > len(
-                sorted_list_of_titles_urls
-            ):
-                updated_start_indx = (
-                    len(sorted_list_of_titles_urls) - NUM_ARTICLES_PER_PAGE
-                )
 
             st.session_state["article_display_start_index"] = updated_start_indx
 

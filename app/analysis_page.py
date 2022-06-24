@@ -11,12 +11,16 @@ def analysis_page():
 
     st.markdown(
         """
-        <h3 style='text-align: center; margin-bottom: -35px;'>
-        Top phrases found
-        </h1>
-    """,
-        unsafe_allow_html=True,
+        ## Top phrases found
+
+        Prints top 30 by default
+
+
+        ---
+
+
+        """
     )
 
-    for word in get_word_cloud(list_of_titles_urls):
-        st.text(word)
+    for i, word in enumerate(get_word_cloud(list_of_titles_urls)):
+        st.markdown(f"{i+1}. {word.capitalize()}")

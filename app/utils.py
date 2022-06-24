@@ -34,27 +34,18 @@ def read_todays_data(topics: List[str] = ["cs.LG", "stat.ML"]):
 
 
 def head():
+
     st.markdown(
         """
-        <h1 style='text-align: center; margin-bottom: -35px;'>
-        ArXiv Summary
-        </h1>
-    """,
-        unsafe_allow_html=True,
-    )
+        # ArXiv Summary
+        
+        Over the difficulty of sifiting through new ArXiv releases.
+        Easily explore todays ArXiv uploads. \U0001F642.
 
-    st.caption(
+        ---
+
+
         """
-        <p style='text-align: center'>
-        by <a href='https://medium.com/geoclid'>Geoclid</a>
-        </p>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    st.write(
-        "Over the difficulty of sifiting through new ArXiv releases. ",
-        "Click the button for todays ArXiv summary \U0001F642.",
     )
 
 
