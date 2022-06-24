@@ -1,7 +1,7 @@
 import streamlit as st
 
-from noun_chunk import get_word_cloud
 from utils import read_todays_data
+from word_importance import get_important_words
 
 
 def analysis_page():
@@ -22,5 +22,5 @@ def analysis_page():
         """
     )
 
-    for i, word in enumerate(get_word_cloud(list_of_titles_urls)):
+    for i, word in enumerate(get_important_words(list_of_titles_urls)):
         st.markdown(f"{i+1}. {word.capitalize()}")

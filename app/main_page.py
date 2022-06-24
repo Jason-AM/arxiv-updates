@@ -3,9 +3,8 @@ from pathlib import Path
 
 import streamlit as st
 
-from analysis_page import analysis_page
 from article_ordering import sort_articles_by_key_words
-from utils import display_articles, head, read_todays_data
+from utils import read_todays_data
 
 NUM_ARTICLES_PER_PAGE = 5
 
@@ -16,23 +15,44 @@ def reset_current_article_num():
     st.session_state["article_display_start_index"] = 0
 
 
-def get_article_list_to_show(list_of_titles_urls, start_indx, end_indx):
+def show_titles_and_urls(list_of_titles_urls, start_indx, end_indx):
 
     list_of_current_titles_urls = list_of_titles_urls[start_indx:end_indx]
 
     article_start_number = start_indx + 1
-    display_articles(list_of_current_titles_urls, article_start_number)
+
+    for i, (title, url) in enumerate(list_of_current_titles_urls):
+        st.write(f"{article_start_number + i}. {title.capitalize()} ({url})")
+
+
+def heading():
+
+    st.markdown(
+        """
+        # ArXiv Summary
+
+        Over the difficulty of sifiting through new ArXiv releases.
+        Easily explore todays ArXiv uploads. \U0001F642.
+
+        ---
+
+
+        """
+    )
 
 
 def main_page():
 
-    head()
+    # get heading text
+    heading()
 
     if "article_display_start_index" not in st.session_state:
         reset_current_article_num()
 
-    list_of_titles_urls = list(read_todays_data(["cs.LG"]))
+    # get arxiv info from rss feed
+    list_of_titles_urls = sorted(read_todays_data(["cs.LG", "stat.ML"]))
 
+    # manage title ordering from word search
     key_words_inputted = st.text_input(
         "Words to surface", value=st.session_state.get("key_words", "")
     )
@@ -53,6 +73,7 @@ def main_page():
     else:
         sorted_list_of_titles_urls = list_of_titles_urls
 
+    # set up previous, next and random for title viewing
     previous_button, next_button, random_spin, _ = st.columns([1, 1, 1, 1.5])
     with previous_button:
         previous_articles = st.button("Previous articles")
@@ -64,14 +85,18 @@ def main_page():
     st.write(f"Total of {len(sorted_list_of_titles_urls)} articles")
 
     if random_articles:
+
         random_start_indx = random.randint(
             0, len(sorted_list_of_titles_urls) - NUM_ARTICLES_PER_PAGE
         )
-        get_article_list_to_show(
+
+        show_titles_and_urls(
             sorted_list_of_titles_urls,
             random_start_indx,
             random_start_indx + NUM_ARTICLES_PER_PAGE,
         )
+
+        # after random spin we start back at index 0/
         reset_current_article_num()
     else:
 
@@ -97,13 +122,4 @@ def main_page():
 
         start_idx = st.session_state["article_display_start_index"]
         end_idx = start_idx + NUM_ARTICLES_PER_PAGE
-        get_article_list_to_show(sorted_list_of_titles_urls, start_idx, end_idx)
-
-
-page_names_to_funcs = {
-    "Main Page": main_page,
-    "Analysis page": analysis_page,
-}
-
-selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
-page_names_to_funcs[selected_page]()
+        show_titles_and_urls(sorted_list_of_titles_urls, start_idx, end_idx)
