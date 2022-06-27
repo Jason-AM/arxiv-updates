@@ -23,14 +23,14 @@ def _get_abstract(xml_element):
 
 @sleep_and_retry
 @limits(calls=1, period=3)
-def get_title_link_from_rss(topic: str):
+def get_title_link_abs_from_rss(topic: str):
 
     reqested = requests.get(f"http://arxiv.org/rss/{topic}")
     requested_content = reqested.content
     root = et.fromstring(requested_content)
 
     titles_and_links = {
-        (_get_title(child), _get_link(child))
+        (_get_title(child), _get_link(child), _get_abstract(child))
         for child in root.findall(f"{BASE_XML_TAG}item")
     }
 
