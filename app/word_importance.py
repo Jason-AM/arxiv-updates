@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 def get_important_words(titles_urls):
 
-    all_titles_list = [title for title, _ in titles_urls]
+    all_titles_list = [title for title, _, _ in titles_urls]
 
     nlp = spacy.load("en_core_web_sm")
     docs = [nlp(title) for title in all_titles_list]
