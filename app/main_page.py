@@ -15,6 +15,10 @@ def reset_current_article_num():
     st.session_state["article_display_start_index"] = 0
 
 
+def reset_button():
+    st.session_state["last_button_pressed"] = "previous"
+
+
 def show_titles_urls_abstract(list_of_titles_urls, start_indx, end_indx):
 
     list_of_current_titles_urls = list_of_titles_urls[start_indx:end_indx]
@@ -54,77 +58,43 @@ def initilization_of_states():
     if "last_button_pressed" not in st.session_state:
         st.session_state["last_button_pressed"] = "previous"
 
+    if "key_words" not in st.session_state:
+        st.session_state["key_words"] = ""
+
 
 def previous_next_random_update(button_type):
     """Callback function that updates when a previous/nect/random button in pressed"""
     st.session_state["last_button_pressed"] = button_type
 
 
-def main_page():
-
-    # get heading text
-    heading()
-
-    # initilize states if not already initilialsed
-    initilization_of_states()
-
-    # get arxiv info from rss feed
-    list_of_titles_urls = sorted(read_todays_data(["cs.LG", "stat.ML"]))
-
-    # manage title ordering from word search
-    key_words_inputted = st.text_input(
-        "Words to surface", value=st.session_state.get("key_words", "")
-    )
-
-    if "key_words" not in st.session_state:
-        st.session_state["key_words"] = key_words_inputted
-
-    if key_words_inputted != st.session_state["key_words"]:
-        st.session_state["key_words"] = key_words_inputted
-        reset_current_article_num()
-
-    list_of_key_words = key_words_inputted.split(",") if key_words_inputted else None
-
-    if list_of_key_words:
-        sorted_list_of_titles_urls = sort_articles_by_key_words(
-            list_of_titles_urls, list_of_key_words
-        )
-    else:
-        sorted_list_of_titles_urls = list_of_titles_urls
-
+def insert_previous_next_random_buttons(type: str):
     # set up previous, next and random for title viewing
     previous_button, next_button, random_spin, _ = st.columns([1, 1, 1, 1.5])
-    # with previous_button:
-    #     previous_articles = st.button("Previous articles")
-    # with next_button:
-    #     next_articles = st.button("Next articles")
-    # with random_spin:
-    #     random_articles = st.button("Random articles")
 
     with previous_button:
         st.button(
             "Previous articles",
-            key="upper_preivous_button",
+            key=f"{type}_preivous_button",
             on_click=previous_next_random_update,
             args=("previous",),
         )
     with next_button:
         st.button(
             "Next articles",
-            key="upper_next_button",
+            key=f"{type}__next_button",
             on_click=previous_next_random_update,
             args=("next",),
         )
     with random_spin:
         st.button(
             "Random articles",
-            key="random_button",
+            key=f"{type}_random_button",
             on_click=previous_next_random_update,
             args=("random",),
         )
 
-    st.write(f"Total of {len(sorted_list_of_titles_urls)} articles")
 
+def display_outcomes_of_button_press(sorted_list_of_titles_urls):
     if st.session_state["last_button_pressed"] == "random":
 
         random_start_indx = random.randint(
@@ -164,19 +134,49 @@ def main_page():
         end_idx = start_idx + NUM_ARTICLES_PER_PAGE
         show_titles_urls_abstract(sorted_list_of_titles_urls, start_idx, end_idx)
 
-    # set up previous, next and random for title viewing
-    previous_button_lower, next_button_lower, _ = st.columns([1, 1, 2.5])
-    with previous_button_lower:
-        st.button(
-            "Previous articles",
-            key="lower_preivous_button",
-            on_click=previous_next_random_update,
-            args=("previous",),
-        )
-    with next_button_lower:
-        st.button(
-            "Next articles",
-            key="lower_next_button",
-            on_click=previous_next_random_update,
-            args=("next",),
-        )
+
+def processed_key_words(key_words_inputted, list_of_titles_urls):
+    if key_words_inputted != st.session_state["key_words"]:
+        st.session_state["key_words"] = key_words_inputted
+        reset_current_article_num()
+        reset_button()
+
+    list_of_key_words = key_words_inputted.split(",") if key_words_inputted else None
+
+    if list_of_key_words:
+        return sort_articles_by_key_words(list_of_titles_urls, list_of_key_words)
+
+    return list_of_titles_urls
+
+
+def main_page():
+
+    # get heading text
+    heading()
+
+    # initilize states if not already initilialsed
+    initilization_of_states()
+
+    # get arxiv info from rss feed
+    list_of_titles_urls = sorted(read_todays_data(["cs.LG", "stat.ML"]))
+
+    # insert box for words to surface
+    key_words_inputted = st.text_input(
+        "Words to surface", value=st.session_state.get("key_words", "")
+    )
+
+    # process the inserted key words
+    sorted_list_of_titles_urls = processed_key_words(
+        key_words_inputted, list_of_titles_urls
+    )
+
+    # insert previous next and random butons
+    insert_previous_next_random_buttons(type="upper")
+
+    st.write(f"Total of {len(sorted_list_of_titles_urls)} articles")
+
+    # display articles
+    display_outcomes_of_button_press(sorted_list_of_titles_urls)
+
+    # insert previous next and random butons
+    insert_previous_next_random_buttons(type="lower")
