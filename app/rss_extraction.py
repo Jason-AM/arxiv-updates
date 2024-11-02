@@ -2,6 +2,7 @@ import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from ratelimit import limits, sleep_and_retry
+from gemini_call import gemini_request
 
 #TODO clean up the following function - its ugly
 @sleep_and_retry
@@ -34,9 +35,17 @@ def get_title_link_abs_from_rss(topic: str):
         published_date = parse_arxiv_date(entry.find("{http://www.w3.org/2005/Atom}published").text)
         if start_date <= published_date.strftime("%Y-%m-%d") <= end_date:
             title = entry.find("{http://www.w3.org/2005/Atom}title").text
-            summary = entry.find("{http://www.w3.org/2005/Atom}summary").text
             link = entry.find("{http://www.w3.org/2005/Atom}id").text
-            
+
+            summary = entry.find("{http://www.w3.org/2005/Atom}summary").text
+            summary = gemini_request(
+                f"""Please provide a very simple summary of this abstract and try explain why this is useful
+                Abstract {summary}
+                """
+            )
+            print(summary['candidates'][0]['content']['parts'][0]['text'])
+            summary = summary['candidates'][0]['content']['parts'][0]['text']
+
             titles_and_links.append((title, link, summary))
 
     return set(titles_and_links)
