@@ -1,37 +1,43 @@
-import xml.etree.ElementTree as et
-
 import requests
+import xml.etree.ElementTree as ET
+from datetime import datetime
 from ratelimit import limits, sleep_and_retry
 
-BASE_XML_TAG = "{http://purl.org/rss/1.0/}"
-
-
-def _get_title(xml_element):
-    title_text_uncleaned = xml_element.find(f"{BASE_XML_TAG}title").text
-    return title_text_uncleaned.split(". (")[0]
-
-
-def _get_link(xml_element):
-    return xml_element.find(f"{BASE_XML_TAG}link").text
-
-
-def _get_abstract(xml_element):
-    """Set up for future use"""
-    abstract_uncleaned = xml_element.find(f"{BASE_XML_TAG}description").text
-    return abstract_uncleaned.replace("<p>", "").replace("</p>", "")
-
-
+#TODO clean up the following function - its ugly
 @sleep_and_retry
 @limits(calls=1, period=3)
 def get_title_link_abs_from_rss(topic: str):
 
-    reqested = requests.get(f"http://arxiv.org/rss/{topic}")
-    requested_content = reqested.content
-    root = et.fromstring(requested_content)
+    # Define your query parameters
+    query = f"cat:{topic}"  # Example category: Computer Science - Artificial Intelligence
+    start_date = "2024-10-01"  # Start date (YYYY-MM-DD)
+    end_date = "2024-10-31"  # End date (YYYY-MM-DD)
+    max_results = 10  # Number of results to retrieve
 
-    titles_and_links = {
-        (_get_title(child), _get_link(child), _get_abstract(child))
-        for child in root.findall(f"{BASE_XML_TAG}item")
-    }
+    # Construct the API URL
+    url = f"http://export.arxiv.org/api/query?search_query={query}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
 
-    return titles_and_links
+    # Make the request
+    response = requests.get(url)
+    response.raise_for_status()  # Check for request errors
+
+    # Parse the XML response
+    root = ET.fromstring(response.content)
+
+    # Define a function to convert arXiv's timestamp format to datetime
+    def parse_arxiv_date(date_str):
+        return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+
+    # Filter entries by date
+    titles_and_links = []
+    for entry in root.findall("{http://www.w3.org/2005/Atom}entry"):
+        published_date = parse_arxiv_date(entry.find("{http://www.w3.org/2005/Atom}published").text)
+        if start_date <= published_date.strftime("%Y-%m-%d") <= end_date:
+            title = entry.find("{http://www.w3.org/2005/Atom}title").text
+            summary = entry.find("{http://www.w3.org/2005/Atom}summary").text
+            link = entry.find("{http://www.w3.org/2005/Atom}id").text
+            
+            titles_and_links.append((title, link, summary))
+
+    return set(titles_and_links)
+
