@@ -1,9 +1,9 @@
 import requests
-from keys import GEMINI_KEY
+import streamlit as st
 
 # Define the endpoint and API key
 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b-latest:generateContent"
-api_key = GEMINI_KEY  
+api_key = st.secrets["gemini"]["api_key"]  
 
 # Set headers and JSON payload
 headers = {
