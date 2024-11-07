@@ -11,9 +11,9 @@ def get_title_link_abs_from_rss(topic: str):
 
     # Define your query parameters
     query = f"cat:{topic}"  # Example category: Computer Science - Artificial Intelligence
-    start_date = "2024-10-01"  # Start date (YYYY-MM-DD)
-    end_date = "2024-10-31"  # End date (YYYY-MM-DD)
-    max_results = 10  # Number of results to retrieve
+    start_date = "2024-11-05"  # Start date (YYYY-MM-DD)
+    end_date = "2024-11-07"  # End date (YYYY-MM-DD)
+    max_results = 50  # Number of results to retrieve
 
     # Construct the API URL
     url = f"http://export.arxiv.org/api/query?search_query={query}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
@@ -33,7 +33,7 @@ def get_title_link_abs_from_rss(topic: str):
     titles_and_links = []
     for entry in root.findall("{http://www.w3.org/2005/Atom}entry"):
         published_date = parse_arxiv_date(entry.find("{http://www.w3.org/2005/Atom}published").text)
-        if start_date <= published_date.strftime("%Y-%m-%d") <= end_date:
+        if start_date <= published_date.strftime("%Y-%m-%d"): # <= end_date:
             title = entry.find("{http://www.w3.org/2005/Atom}title").text
             link = entry.find("{http://www.w3.org/2005/Atom}id").text
 
@@ -43,10 +43,9 @@ def get_title_link_abs_from_rss(topic: str):
                 Abstract {summary}
                 """
             )
-            print(summary['candidates'][0]['content']['parts'][0]['text'])
-            summary = summary['candidates'][0]['content']['parts'][0]['text']
-
-            titles_and_links.append((title, link, summary))
+            if summary:
+                summary = summary['candidates'][0]['content']['parts'][0]['text']
+                titles_and_links.append((title, link, summary))
 
     return set(titles_and_links)
 

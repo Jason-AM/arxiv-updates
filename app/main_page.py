@@ -31,7 +31,7 @@ def show_titles_urls_abstract(list_of_titles_urls, start_indx, end_indx):
 
         _, container, _ = st.columns([0.1, 1, 0.1])
         with container:
-            expander = st.expander("Abstract")
+            expander = st.expander("Analysed Abstract")
             expander.write(abstract)
 
 

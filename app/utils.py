@@ -8,7 +8,7 @@ from rss_extraction import get_title_link_abs_from_rss
 DATA_DIR = Path("./data")
 
 
-# @st.cache(suppress_st_warning=True)
+@st.cache_data()
 def read_todays_data(topics: List[str] = ["cs.LG", "stat.ML"]):
     title_link_abs_set = set()
     for topic in topics:
